@@ -1,0 +1,3 @@
+rootProject.name = 'shuttleservice'
+include 'service-shuttle'
+

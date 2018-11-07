@@ -1,0 +1,56 @@
+group 'com.siemens.shutlleservice'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile group: 'org.springframework', name: 'spring-context', version: '5.0.0.RELEASE'
+    compile group: 'org.springframework', name: 'spring-orm', version: '5.0.0.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '1.5.8.RELEASE'
+    compile group: 'mysql', name: 'mysql-connector-java', version: '6.0.6'
+    compile group: 'org.apache.commons', name: 'commons-dbcp2', version: '2.1.1'
+    compile group: 'org.hibernate', name: 'hibernate-gradle-plugin', version: '5.2.11.Final'
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+sourceSets {
+
+    configurationResources{
+
+        resources {
+            srcDir '../src/main/resources'
+        }
+    }
+}
+
+jar {
+    manifest.attributes(
+            'Main-Class': 'com.siemens.service.shuttle.main.MainApp',
+            'Implementation-Title': project.name,
+            'Implementation-Version': project.version,
+            'Class-Path': configurations.runtime.files.collect { "lib/$it.name" }.join(' ') + ' conf/.'
+    )
+}
+
+task distribute(type: Zip, dependsOn: jar) {
+    baseName = '/' + project.name
+    from (configurations.compile) { into 'lib' }
+    from ( sourceSets.configurationResources.resources ) { into 'conf' }
+    from (jar.archivePath)
+}
+
+
+
+task unzip(type: Copy, dependsOn: distribute) {
+    def zipFile = file("${buildDir}/distributions/${project.name}-${project.version}.zip")
+    def outputDir = file("${buildDir}/distributions/${project.name}-${project.version}")
+
+    from zipTree(zipFile)
+    into outputDir
+}
